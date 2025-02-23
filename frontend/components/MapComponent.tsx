@@ -6,6 +6,8 @@ import { getWaySegmentFromOSMID } from "@/utils/get_way_segment";
 import { getConnectedRoadEndpoints } from "@/utils/get_nodes";
 import { convertWayToSegment } from "@/utils/convertWayToSegment";
 import { calculateDistance } from "@/utils/calculateDistance";
+import { getPointsOfInterest } from "@/utils/get_points_of_interest";
+import type { POI } from "@/utils/get_points_of_interest"; 
 
 const defaultMapContainerStyle = {
   width: "70%",
@@ -33,6 +35,7 @@ const polylineOptionsConnected = {
 interface MapComponentProps {
   osmId: number;
   showDistance: boolean;
+  handleDistance : (item: number[])=>void;
 }
 
 // Define an interface for the expected return from getConnectedRoadEndpoints.
@@ -41,7 +44,7 @@ interface ConnectedRoadsResult {
   nodeMap: Record<number, LatLng>;
 }
 
-const MapComponent = ({ osmId, showDistance }: MapComponentProps) => {
+const MapComponent = ({ osmId, showDistance, handleDistance }: MapComponentProps) => {
   const [defaultMapCenter, setDefaultMapCenter] = useState<LatLng>({
     lat: 33.4885470867157,
     lng: -84.4326486587524,
@@ -49,6 +52,7 @@ const MapComponent = ({ osmId, showDistance }: MapComponentProps) => {
   const [primarySegment, setPrimarySegment] = useState<Segment | null>(null);
   const [connectedSegments, setConnectedSegments] = useState<Segment[]>([]);
   const [distances, setDistances] = useState<number[]>([]);
+  const [pois, setPOIs] = useState<POI[]>([]); // ------------Added -----------------
 
   useEffect(() => {
     if (osmId) {
@@ -67,6 +71,13 @@ const MapComponent = ({ osmId, showDistance }: MapComponentProps) => {
           };
           setDefaultMapCenter(center);
 
+          getPointsOfInterest(center.lat, center.lng)
+            .then((poiResults) => {
+              setPOIs(poiResults);
+            })
+            .catch((error) => {
+              console.error("Error fetching POIs:", error);
+            });
           // 2. Fetch connected roads using the computed center.
           return getConnectedRoadEndpoints(center.lat, center.lng);
         })
@@ -86,6 +97,7 @@ const MapComponent = ({ osmId, showDistance }: MapComponentProps) => {
               calculateDistance(osmId, segments)
                 .then((dists) => {
                   setDistances(dists);
+                  handleDistance(dists);
                   console.log("Distances (in meters):", dists);
                 })
                 .catch((error) => {
@@ -146,6 +158,16 @@ const MapComponent = ({ osmId, showDistance }: MapComponentProps) => {
               />
             );
           })}
+          {pois.map((poi) => (
+          <Marker
+            key={poi.id}
+            position={{ lat: poi.lat, lng: poi.lng }}
+            icon={{
+              url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+            }}
+            title={poi.name ? poi.name : poi.amenity ? poi.amenity : "POI"}
+          />
+        ))}
       </GoogleMap>
     </div>
   );

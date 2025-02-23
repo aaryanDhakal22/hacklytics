@@ -1,9 +1,7 @@
 // utils/calculateDistance.ts
 import { getWaySegmentFromOSMID } from "./get_way_segment";
 import { convertWayToSegment } from "./convertWayToSegment";
-/**
- * Calculates the Haversine distance (in meters) between two points.
- */
+
 function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371e3; // Earth's radius in meters
   const phi1 = (lat1 * Math.PI) / 180;
@@ -17,14 +15,6 @@ function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
   return R * c;
 }
 
-/**
- * Calculates the distance between the primary road (identified by osmId) and each connected segment.
- * The distance is computed between the midpoint of the primary segment and the midpoint of each connected segment.
- *
- * @param osmId - The OSM way ID of the primary road.
- * @param connectedSegments - An array of connected segments.
- * @returns A Promise resolving to an array of distances in meters.
- */
 export async function calculateDistance(
   osmId: number,
   connectedSegments: Segment[]

@@ -4,13 +4,13 @@
 import { useState } from "react";
 import { MapComponent } from "@/components/MapComponent";
 import { MapProvider } from "@/provider/map_provider";
-
+import Score from "@/components/score";
 const Page = () => {
   // Default OSM ID can be any valid number; adjust as needed.
   const [osmId, setOsmId] = useState<number>(269636965);
   const [showConnected, setShowConnected] = useState<boolean>(true);
   const [showDistance, setShowDistance] = useState<boolean>(true);
-
+  const [distances, setDistances] = useState<number[]>([]);
   return (
     <MapProvider>
 
@@ -20,6 +20,7 @@ const Page = () => {
         <MapComponent
           osmId={osmId}
           showDistance={showDistance}
+          handleDistance={setDistances}
         />
       </div>
       {/* Right: Controls */}
@@ -65,6 +66,9 @@ const Page = () => {
               className="toggle toggle-accent"
             />
           </div>
+            <span className="text-black d-block ml-2">
+              <Score distances = {distances} />
+            </span>
         </div>
       </div>
     </div>
